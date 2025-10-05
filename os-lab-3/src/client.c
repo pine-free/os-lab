@@ -19,21 +19,21 @@ void setup_subprocess(int *link, pid_t *pid) {
   }
 }
 
-int run_subprocess(const char *path, char *const args[], char* wbuf, int size) {
-  int link[2];
+int run_subprocess(const char *path, char *const args[], char* wbuf, int wsize) {
+  int child_to_parent[2];
   pid_t pid;
 
-  setup_subprocess(link, &pid);
+  setup_subprocess(child_to_parent, &pid);
 
   if (pid == 0) {
-    dup2(link[1], STDOUT_FILENO);
-    close(link[0]);
-    close(link[1]);
+    dup2(child_to_parent[1], STDOUT_FILENO);
+    close(child_to_parent[0]);
+    close(child_to_parent[1]);
     execv(path, args);
     die("execl");
   } else {
-    close(link[1]);
-    int nbytes = read(link[0], wbuf, size);
+    close(child_to_parent[1]);
+    int nbytes = read(child_to_parent[0], wbuf, wsize);
     wait(NULL);
     return nbytes;
   }
