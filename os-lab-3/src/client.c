@@ -93,8 +93,7 @@ int run_tail(const char *rbuf, int rsize, char* wbuf, int wsize) {
   const char *tail_path = "/usr/bin/tail";
   char *tail_args[] = {"tail", "-n", "1", NULL};
 
-  const char* test_str = "lol\nkek\ncheburek";
-  int res = run_subprocess(tail_path, tail_args, test_str, sizeof(test_str), wbuf, wsize);
+  int res = run_subprocess(tail_path, tail_args, rbuf, rsize, wbuf, wsize);
   return res;
 }
 
@@ -114,8 +113,7 @@ int main() {
   printf("got (%.*s)\n", res, buf);
 
   // run wc to get the line count
-  const char* rbuf = buf;
-  res = run_tail(rbuf, sizeof(rbuf), buf, sizeof(buf));
+  res = run_tail(buf, strlen(buf), buf, sizeof(buf));
 
   printf("got (%.*s)\n", res, buf);
 }
