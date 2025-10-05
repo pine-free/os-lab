@@ -4,8 +4,7 @@
 #include "unistd.h"
 #include "variables.h"
 
-
-void die(const char* msg) {
+void die(const char *msg) {
   fprintf(stderr, "%s\n", msg);
   exit(EXIT_FAILURE);
 }
@@ -20,13 +19,10 @@ void setup_subprocess(int *link, pid_t *pid) {
   }
 }
 
-int ls_sh() {
+int run_subprocess(const char *path, char *const args[]) {
   int link[2];
   pid_t pid;
   char buf[1024];
-
-  const char* path = "/usr/bin/find";
-  char *const args[] = {"find", ".",  "-name", "*.sh", NULL};
 
   setup_subprocess(link, &pid);
 
@@ -46,4 +42,9 @@ int ls_sh() {
   return 1;
 }
 
-int main() { ls_sh(); }
+int main() {
+
+  const char *path = "/usr/bin/find";
+  char *const args[] = {"find", ".", "-name", "*.sh", NULL};
+  run_subprocess(path, args);
+}
