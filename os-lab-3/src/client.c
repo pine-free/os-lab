@@ -3,6 +3,7 @@
 #include "sys/wait.h"
 #include "unistd.h"
 #include "variables.h"
+#include "fcntl.h"
 
 void die(const char *msg) {
   fprintf(stderr, "%s\n", msg);
@@ -10,7 +11,7 @@ void die(const char *msg) {
 }
 
 
-int run_subprocess(const char *path, char *const args[], char* wbuf, int wsize) {
+int run_subprocess(const char *path, char *const args[], char* rbuf, int rsize, char* wbuf, int wsize) {
   int child_to_parent[2];
   int parent_to_child[2];
   pid_t pid;
@@ -29,14 +30,26 @@ int run_subprocess(const char *path, char *const args[], char* wbuf, int wsize) 
 
   if (pid == 0) {
     dup2(child_to_parent[1], STDOUT_FILENO);
-    close(child_to_parent[0]);
     close(child_to_parent[1]);
+
+    close(parent_to_child[1]);
+    dup2(parent_to_child[0], STDIN_FILENO);
+    close(parent_to_child[0]);
+
     execv(path, args);
     die("execl");
   } else {
     close(child_to_parent[1]);
-    int nbytes = read(child_to_parent[0], wbuf, wsize);
+    close(parent_to_child[0]);
+
+    if (write(parent_to_child[1], rbuf, rsize) == -1) {
+      die("write to child stdin");
+    }
+    close(parent_to_child[1]);
+
+
     wait(NULL);
+    int nbytes = read(child_to_parent[0], wbuf, wsize);
     return nbytes;
   }
 
@@ -45,9 +58,12 @@ int run_subprocess(const char *path, char *const args[], char* wbuf, int wsize) 
 
 int main() {
 
-  const char *path = "/usr/bin/find";
-  char *const args[] = {"find", ".", "-name", "*.sh", NULL};
+  // const char *path = "/usr/bin/find";
+  // char *const args[] = {"find", ".", "-name", "*.sh", NULL};
+  const char *path = "/bin/cat";
+  char *const args[] = {"cat", NULL};
   char buf[1024];
-  int res = run_subprocess(path, args, buf, sizeof(buf));
+  puts("run process");
+  int res = run_subprocess(path, args, "", 0, buf, sizeof(buf));
   printf("got (%.*s)\n", res, buf);
 }
