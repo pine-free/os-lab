@@ -10,7 +10,6 @@ void die(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-
 int run_subprocess(const char *path, char *const args[], char* rbuf, int rsize, char* wbuf, int wsize) {
   int child_to_parent[2];
   int parent_to_child[2];
@@ -56,14 +55,18 @@ int run_subprocess(const char *path, char *const args[], char* rbuf, int rsize, 
   return 1;
 }
 
+int run_subprocess_nopipe(const char *path, char *const args[], char* wbuf, int wsize) {
+  return run_subprocess(path, args, "", 0, wbuf, wsize);
+}
+
+
 int main() {
 
-  // const char *path = "/usr/bin/find";
-  // char *const args[] = {"find", ".", "-name", "*.sh", NULL};
-  const char *path = "/bin/cat";
-  char *const args[] = {"cat", NULL};
+  const char *path = "/usr/bin/find";
+  char *const args[] = {"find", ".", "-name", "*.sh", NULL};
+  // const char *path = "/bin/cat";
+  // char *const args[] = {"cat", NULL};
   char buf[1024];
-  puts("run process");
-  int res = run_subprocess(path, args, "", 0, buf, sizeof(buf));
+  int res = run_subprocess_nopipe(path, args, buf, sizeof(buf));
   printf("got (%.*s)\n", res, buf);
 }
