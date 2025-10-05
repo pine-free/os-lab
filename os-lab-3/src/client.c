@@ -3,10 +3,13 @@
 #include "sys/wait.h"
 #include "unistd.h"
 #include "variables.h"
-#include "fcntl.h"
+#include <string.h>
+#include "errno.h"
+
 
 void die(const char *msg) {
   fprintf(stderr, "%s\n", msg);
+  fprintf(stderr, "ERRNO: %d\n", errno);
   exit(EXIT_FAILURE);
 }
 
@@ -36,7 +39,7 @@ int run_subprocess(const char *path, char *const args[], char* rbuf, int rsize, 
     close(parent_to_child[0]);
 
     execv(path, args);
-    die("execl");
+    die("execv");
   } else {
     close(child_to_parent[1]);
     close(parent_to_child[0]);
@@ -60,13 +63,41 @@ int run_subprocess_nopipe(const char *path, char *const args[], char* wbuf, int 
 }
 
 
+int run_find(char* buf, int size) {
+  const char *find_path = "/usr/bin/find";
+  char *const find_args[] = {"find", ".", "-name", "*.sh", NULL};
+
+  int res = run_subprocess_nopipe(find_path, find_args, buf, size);
+  return res;
+}
+
 int main() {
 
-  const char *path = "/usr/bin/find";
-  char *const args[] = {"find", ".", "-name", "*.sh", NULL};
-  // const char *path = "/bin/cat";
-  // char *const args[] = {"cat", NULL};
+  const char *wc_path= "/usr/bin/wc";
+  const char *tail= "/usr/bin/tail";
   char buf[1024];
-  int res = run_subprocess_nopipe(path, args, buf, sizeof(buf));
+
+  // Run find to get the files
+  int res = run_find(buf, sizeof(buf));
+
+  // Extract the files from buffer
+  char* wc_args[] = {"wc", "-l"};
+  int i = 2;
+  char *sep = strtok(buf, "\n");
+  while (sep != NULL) {
+    char* arg = malloc(50);
+    strcpy(arg, sep);
+    wc_args[i++] = arg;
+    sep = strtok(NULL, "\n");
+  }
+
+  wc_args[i] = NULL;
+
+
+  // run wc to get the line count
+  res = run_subprocess_nopipe(wc_path, wc_args, buf, sizeof(buf));
+
+
+  
   printf("got (%.*s)\n", res, buf);
 }
