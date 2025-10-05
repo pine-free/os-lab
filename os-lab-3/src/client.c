@@ -19,6 +19,12 @@ int get_lines(char *buf, char *lines_buf[]) {
   return i;
 }
 
+void append_arr(int start, char* dst[], char* src[], int src_size) {
+  for (int j = 0; j < src_size; ++j) {
+    dst[start + j] = src[j];
+  }
+}
+
 void die(const char *msg) {
   fprintf(stderr, "%s\n", msg);
   fprintf(stderr, "ERRNO: %d\n", errno);
@@ -83,18 +89,11 @@ int run_find(char *buf, int size) {
   return res;
 }
 
-int run_wc(char *rbuf, int rsize, char *wbuf, int wsize) {
+int run_wc(char **files, int nfiles, char *wbuf, int wsize) {
   const char *wc_path = "/usr/bin/wc";
-  char *files[100] = {};
-  int nfiles = get_lines(rbuf, files);
   char *wc_args[100] = {"wc", "-l"};
-  int i = 2;
-
-  for (int j = 0; j < nfiles; ++j) {
-    wc_args[i++] = files[j];
-  }
-
-  wc_args[i] = NULL;
+  append_arr(2, wc_args, files, nfiles);
+  wc_args[2 + nfiles] = NULL;
 
   int res = run_subprocess_nopipe(wc_path, wc_args, wbuf, wsize);
 
@@ -109,7 +108,15 @@ int run_tail(const char *rbuf, int rsize, char *wbuf, int wsize) {
   return res;
 }
 
-int run_du(const char *rbuf, int rsize, char *wbuf, int wsize) {}
+int run_du(char **files, int nfiles, char *wbuf, int wsize) {
+  const char* du_path = "/usr/bin/du";
+  char* du_args[100] = {"du",  "-b"};
+  append_arr(2, du_args, files, nfiles);
+  du_args[2 + nfiles] = NULL;
+
+  int res = run_subprocess_nopipe(du_path, du_args, wbuf, wsize);
+  return res;
+}
 
 int main() {
 
@@ -119,19 +126,27 @@ int main() {
 
   // Run find to get the files
   int res = run_find(buf, sizeof(buf));
-  printf("got (%.*s)\n", res, buf);
 
-  char files_buf[1024];
-  strcpy(files_buf, buf);
-
-  // run wc to get the line count
-  res = run_wc(files_buf, strlen(files_buf), buf, sizeof(buf));
-
-  printf("got (%.*s)\n", res, buf);
+  char* files_buf[100];
+  int nfiles = get_lines(buf, files_buf);
 
   // run wc to get the line count
+  res = run_wc(files_buf, nfiles, buf, sizeof(buf));
   res = run_tail(buf, strlen(buf), buf, sizeof(buf));
 
-  printf("got (%.*s)\n", res, buf);
   printf("lines: %d\n", atoi(buf));
+
+  // run du to get the size
+  res = run_du(files_buf, nfiles, buf, sizeof(buf));
+
+  printf("got (%.*s)\n", res, buf);
+  char* lines[100] = {};
+  int nlines = get_lines(buf, lines);
+  int total = 0;
+  for (int i = 0; i < nlines; ++i) {
+    int size = atoi(lines[i]);
+    total += size;
+  }
+
+  printf("total size: %d", total);
 }
