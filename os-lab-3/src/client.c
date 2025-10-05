@@ -143,7 +143,7 @@ int main() {
   char* lines[100] = {};
   int nlines = get_lines(buf, lines);
   int total = 0;
-  for (int i = 0; i < nlines; ++i) {
+  for (int i = 0; i < nlines - 1; ++i) {
     int size = atoi(lines[i]);
     total += size;
   }
