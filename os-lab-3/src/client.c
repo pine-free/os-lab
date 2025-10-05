@@ -71,17 +71,9 @@ int run_find(char* buf, int size) {
   return res;
 }
 
-int main() {
-
+int run_wc(char* buf, int size) {
   const char *wc_path= "/usr/bin/wc";
-  const char *tail= "/usr/bin/tail";
-  char buf[1024];
-
-  // Run find to get the files
-  int res = run_find(buf, sizeof(buf));
-
-  // Extract the files from buffer
-  char* wc_args[] = {"wc", "-l"};
+  char* wc_args[100] = {"wc", "-l"};
   int i = 2;
   char *sep = strtok(buf, "\n");
   while (sep != NULL) {
@@ -93,9 +85,24 @@ int main() {
 
   wc_args[i] = NULL;
 
+  int res = run_subprocess_nopipe(wc_path, wc_args, buf, size);
+
+  return res;
+}
+
+int main() {
+
+  const char *wc_path= "/usr/bin/wc";
+  const char *tail= "/usr/bin/tail";
+  char buf[1024];
+
+  // Run find to get the files
+  int res = run_find(buf, sizeof(buf));
+  printf("got (%.*s)\n", res, buf);
+
+  res = run_wc(buf, sizeof(buf));
 
   // run wc to get the line count
-  res = run_subprocess_nopipe(wc_path, wc_args, buf, sizeof(buf));
 
 
   
