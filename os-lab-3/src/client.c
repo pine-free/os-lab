@@ -25,13 +25,16 @@ int ls_sh() {
   pid_t pid;
   char buf[1024];
 
+  const char* path = "/usr/bin/find";
+  char *const args[] = {"find", ".",  "-name", "*.sh", NULL};
+
   setup_subprocess(link, &pid);
 
   if (pid == 0) {
     dup2(link[1], STDOUT_FILENO);
     close(link[0]);
     close(link[1]);
-    execl("/usr/bin/find", "find", ".", "-maxdepth", "1", "-name", "*.sh");
+    execv(path, args);
     die("execl");
   } else {
     close(link[1]);
