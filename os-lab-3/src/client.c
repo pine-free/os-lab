@@ -9,21 +9,23 @@ void die(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-void setup_subprocess(int *link, pid_t *pid) {
-  if (pipe(link) == -1) {
-    die("pipe");
-  }
-
-  if ((*pid = fork()) == -1) {
-    die("fork");
-  }
-}
 
 int run_subprocess(const char *path, char *const args[], char* wbuf, int wsize) {
   int child_to_parent[2];
+  int parent_to_child[2];
   pid_t pid;
 
-  setup_subprocess(child_to_parent, &pid);
+  if (pipe(child_to_parent) == -1) {
+    die("pipe child to parent");
+  }
+
+  if (pipe(parent_to_child) == -1) {
+    die("pipe parent to child");
+  }
+
+  if ((pid = fork()) == -1) {
+    die("fork");
+  }
 
   if (pid == 0) {
     dup2(child_to_parent[1], STDOUT_FILENO);
