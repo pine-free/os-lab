@@ -6,14 +6,27 @@
 #include "variables.h"
 #include <string.h>
 
+int get_lines(char *buf, char *lines_buf[]) {
+  char *sep = strtok(buf, "\n");
+  int i = 0;
+  while (sep != NULL) {
+    char *arg = malloc(128);
+    strcpy(arg, sep);
+    lines_buf[i++] = arg;
+    sep = strtok(NULL, "\n");
+  }
+
+  return i;
+}
+
 void die(const char *msg) {
   fprintf(stderr, "%s\n", msg);
   fprintf(stderr, "ERRNO: %d\n", errno);
   exit(EXIT_FAILURE);
 }
 
-int run_subprocess(const char *path, char *const args[], const char *rbuf, int rsize,
-                   char *wbuf, int wsize) {
+int run_subprocess(const char *path, char *const args[], const char *rbuf,
+                   int rsize, char *wbuf, int wsize) {
   int child_to_parent[2];
   int parent_to_child[2];
   pid_t pid;
@@ -70,16 +83,15 @@ int run_find(char *buf, int size) {
   return res;
 }
 
-int run_wc(const char *rbuf, int rsize, char* wbuf, int wsize) {
+int run_wc(char *rbuf, int rsize, char *wbuf, int wsize) {
   const char *wc_path = "/usr/bin/wc";
+  char *files[100] = {};
+  int nfiles = get_lines(rbuf, files);
   char *wc_args[100] = {"wc", "-l"};
   int i = 2;
-  char *sep = strtok(rbuf, "\n");
-  while (sep != NULL) {
-    char *arg = malloc(50);
-    strcpy(arg, sep);
-    wc_args[i++] = arg;
-    sep = strtok(NULL, "\n");
+
+  for (int j = 0; j < nfiles; ++j) {
+    wc_args[i++] = files[j];
   }
 
   wc_args[i] = NULL;
@@ -89,7 +101,7 @@ int run_wc(const char *rbuf, int rsize, char* wbuf, int wsize) {
   return res;
 }
 
-int run_tail(const char *rbuf, int rsize, char* wbuf, int wsize) {
+int run_tail(const char *rbuf, int rsize, char *wbuf, int wsize) {
   const char *tail_path = "/usr/bin/tail";
   char *tail_args[] = {"tail", "-n", "1", NULL};
 
@@ -97,6 +109,7 @@ int run_tail(const char *rbuf, int rsize, char* wbuf, int wsize) {
   return res;
 }
 
+int run_du(const char *rbuf, int rsize, char *wbuf, int wsize) {}
 
 int main() {
 
