@@ -70,11 +70,11 @@ int run_find(char *buf, int size) {
   return res;
 }
 
-int run_wc(char *buf, int size) {
+int run_wc(const char *rbuf, int rsize, char* wbuf, int wsize) {
   const char *wc_path = "/usr/bin/wc";
   char *wc_args[100] = {"wc", "-l"};
   int i = 2;
-  char *sep = strtok(buf, "\n");
+  char *sep = strtok(rbuf, "\n");
   while (sep != NULL) {
     char *arg = malloc(50);
     strcpy(arg, sep);
@@ -84,7 +84,7 @@ int run_wc(char *buf, int size) {
 
   wc_args[i] = NULL;
 
-  int res = run_subprocess_nopipe(wc_path, wc_args, buf, size);
+  int res = run_subprocess_nopipe(wc_path, wc_args, wbuf, wsize);
 
   return res;
 }
@@ -97,6 +97,7 @@ int run_tail(const char *rbuf, int rsize, char* wbuf, int wsize) {
   return res;
 }
 
+
 int main() {
 
   const char *wc_path = "/usr/bin/wc";
@@ -107,8 +108,11 @@ int main() {
   int res = run_find(buf, sizeof(buf));
   printf("got (%.*s)\n", res, buf);
 
+  char files_buf[1024];
+  strcpy(files_buf, buf);
+
   // run wc to get the line count
-  res = run_wc(buf, sizeof(buf));
+  res = run_wc(files_buf, strlen(files_buf), buf, sizeof(buf));
 
   printf("got (%.*s)\n", res, buf);
 
@@ -116,4 +120,5 @@ int main() {
   res = run_tail(buf, strlen(buf), buf, sizeof(buf));
 
   printf("got (%.*s)\n", res, buf);
+  printf("lines: %d\n", atoi(buf));
 }
