@@ -19,7 +19,7 @@ void setup_subprocess(int *link, pid_t *pid) {
   }
 }
 
-int run_subprocess(const char *path, char *const args[]) {
+int run_subprocess(const char *path, char *const args[], char* wbuf, int size) {
   int link[2];
   pid_t pid;
   char buf[1024];
@@ -34,8 +34,8 @@ int run_subprocess(const char *path, char *const args[]) {
     die("execl");
   } else {
     close(link[1]);
-    int nbytes = read(link[0], buf, sizeof(buf));
-    printf("got (%.*s)\n", nbytes, buf);
+    int nbytes = read(link[0], wbuf, size);
+    printf("got (%.*s)\n", nbytes, wbuf);
     wait(NULL);
   }
 
@@ -46,5 +46,6 @@ int main() {
 
   const char *path = "/usr/bin/find";
   char *const args[] = {"find", ".", "-name", "*.sh", NULL};
-  run_subprocess(path, args);
+  char buf[1024];
+  run_subprocess(path, args, buf, sizeof(buf));
 }
