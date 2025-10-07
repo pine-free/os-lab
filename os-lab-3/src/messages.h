@@ -21,4 +21,4 @@ int open_queue(key_t msg_key);
 
 int send_message(int qid, struct mymsgbuf *qbuf);
 
-int read_message(int qid, enum MSG_TYPE type, struct mymsgbuf *qbuf);
+int read_message(int qid, enum MSG_TYPE type, struct mymsgbuf *qbuf, int msgflag);

@@ -30,12 +30,12 @@ int send_message(int qid, struct mymsgbuf *qbuf) {
   return res;
 }
 
-int read_message(int qid, enum MSG_TYPE type, struct mymsgbuf *qbuf) {
+int read_message(int qid, enum MSG_TYPE type, struct mymsgbuf *qbuf, int msgflg) {
   int res, len;
 
   // The length of the message if the size of the entire struct
   // minus the type
-  if ((res = msgrcv(qid, qbuf, MSG_LEN, type, 0)) == -1) {
+  if ((res = msgrcv(qid, qbuf, MSG_LEN, type, msgflg)) == -1) {
     return -1;
   }
   if (DEBUG) {

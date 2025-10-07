@@ -1,6 +1,7 @@
 #include "common.h"
 #include "messages.h"
 #include <stdio.h>
+#include <sys/msg.h>
 
 int run_fgrep(char **files, int nfiles, char *wbuf, int wsize) {
   const char *fgrep_path = "/usr/bin/fgrep";
@@ -38,12 +39,12 @@ int main() {
   int qid = open_queue(MSG_QUEUE_KEY);
 
   struct mymsgbuf msg;
-  char *awk_files[100];
+  char *awk_files[100] = {};
   int msg_size = 0;
   int total_msgs_size = 0;
 
   while (1) {
-    if ((msg_size = read_message(qid, NONE, &msg)) == 0)
+    if ((msg_size = read_message(qid, NONE, &msg, 0)) == 0)
       continue;
 
     total_msgs_size += msg_size;
@@ -58,11 +59,15 @@ int main() {
       }
     }
 
-    do {
-      msg_size = read_message(qid, NONE, &msg);
+    struct msqid_ds msg_info;
+    msgctl(qid, IPC_STAT, &msg_info);
+
+    for (int i = 0; i < msg_info.msg_qnum; ++i) {
+      msg_size = read_message(qid, NONE, &msg, IPC_NOWAIT);
       total_msgs_size += msg_size;
-    } while (msg_size != 0);
+    }
 
     printf("total size of read messages: %d bytes\n", total_msgs_size);
+    total_msgs_size = 0;
   }
 }
