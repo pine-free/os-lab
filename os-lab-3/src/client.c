@@ -6,6 +6,8 @@
 #include "variables.h"
 #include <string.h>
 
+int DEBUG = 0;
+
 int get_lines(char *buf, char *lines_buf[]) {
   char *sep = strtok(buf, "\n");
   int i = 0;
@@ -36,6 +38,7 @@ int run_subprocess(const char *path, char *const args[], const char *rbuf,
   int child_to_parent[2];
   int parent_to_child[2];
   pid_t pid;
+
 
   if (pipe(child_to_parent) == -1) {
     die("pipe child to parent");
@@ -86,6 +89,11 @@ int run_find(char *buf, int size) {
   char *const find_args[] = {"find", ".", "-name", "*.sh", NULL};
 
   int res = run_subprocess_nopipe(find_path, find_args, buf, size);
+  buf[--res] = 0;
+  
+  if (DEBUG) {
+    printf("[DEBUG] find output '%.*s'\n", res, buf);
+  }
   return res;
 }
 
@@ -96,7 +104,11 @@ int run_wc(char **files, int nfiles, char *wbuf, int wsize) {
   wc_args[2 + nfiles] = NULL;
 
   int res = run_subprocess_nopipe(wc_path, wc_args, wbuf, wsize);
+  wbuf[--res] = 0;
 
+  if (DEBUG) {
+    printf("[DEBUG] wc got '%.*s'\n", res, wbuf);
+  }
   return res;
 }
 
@@ -104,42 +116,67 @@ int run_tail(const char *rbuf, int rsize, char *wbuf, int wsize) {
   const char *tail_path = "/usr/bin/tail";
   char *tail_args[] = {"tail", "-n", "1", NULL};
 
+  if (DEBUG) {
+    printf("[DEBUG] tail stdin: '%.*s'\n", rsize, rbuf);
+  }
   int res = run_subprocess(tail_path, tail_args, rbuf, rsize, wbuf, wsize);
+  wbuf[--res] = 0;
+  if (DEBUG) {
+    printf("[DEBUG] tail got '%.*s'\n", res, wbuf);
+  }
   return res;
 }
 
 int run_du(char **files, int nfiles, char *wbuf, int wsize) {
+  if (nfiles == 0) {
+    if (DEBUG) {
+      puts("[DEBUG] du got no files on input, size 0");
+    }
+    return 0;
+  }
+
   const char* du_path = "/usr/bin/du";
   char* du_args[100] = {"du",  "-b"};
   append_arr(2, du_args, files, nfiles);
   du_args[2 + nfiles] = NULL;
 
   int res = run_subprocess_nopipe(du_path, du_args, wbuf, wsize);
+  wbuf[--res] = 0;
+  if (DEBUG) {
+    printf("[DEBUG] du got '%.*s'\n", res, wbuf);
+  }
   return res;
 }
 
-int main() {
-
-  const char *wc_path = "/usr/bin/wc";
-  const char *tail = "/usr/bin/tail";
-  char buf[1024];
-
-  // Run find to get the files
+int fill_files_buf(char* files_buf[]) {
+  char buf[1024] = {};
   int res = run_find(buf, sizeof(buf));
 
-  char* files_buf[100];
   int nfiles = get_lines(buf, files_buf);
 
-  // run wc to get the line count
-  res = run_wc(files_buf, nfiles, buf, sizeof(buf));
+  if (DEBUG) {
+    printf("[DEBUG] got %d files\n", nfiles);
+    for (int i = 0; i < nfiles; ++i) {
+      printf("[DEBUG] %d. %s\n", i + 1, files_buf[i]);
+    }
+  }
+
+  return nfiles;
+}
+
+int get_lines_count(char* files_buf[], int nfiles) {
+  char buf[1024];
+  int res = run_wc(files_buf, nfiles, buf, sizeof(buf));
   res = run_tail(buf, strlen(buf), buf, sizeof(buf));
 
-  printf("lines: %d\n", atoi(buf));
+  return atoi(buf);
+}
 
-  // run du to get the size
-  res = run_du(files_buf, nfiles, buf, sizeof(buf));
+int get_bytes_size(char* files_buf[], int nfiles) {
+  char buf[1024];
 
-  printf("got (%.*s)\n", res, buf);
+  int res = run_du(files_buf, nfiles, buf, sizeof(buf));
+
   char* lines[100] = {};
   int nlines = get_lines(buf, lines);
   int total = 0;
@@ -148,5 +185,25 @@ int main() {
     total += size;
   }
 
-  printf("total size: %d", total);
+  return total;
+}
+
+int main() {
+  if (getenv("DEBUG")) {
+    DEBUG=1;
+  }
+
+  char* files_buf[100];
+  int nfiles = fill_files_buf(files_buf);
+
+  for (int i = 0; i < nfiles; ++i) {
+    printf("%s\n", files_buf[i]);
+  }
+
+  int lines_count = get_lines_count(files_buf, nfiles);
+  int bytes_size = get_bytes_size(files_buf, nfiles);
+
+
+  printf("lines: %d\n", lines_count);
+  printf("total size: %d", bytes_size);
 }
