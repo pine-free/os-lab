@@ -6,11 +6,12 @@
 
 int run_grep(char **files, int nfiles, char *wbuf, int wsize) {
   const char *grep_path = "/usr/bin/grep";
-  char *grep_args[] = {"grep", "-Fl", "awk"};
-  append_arr(2, grep_args, files, nfiles);
-  grep_args[2 + nfiles] = NULL;
+  char *grep_args[100] = {"grep", "-Fl", "awk"};
+  int arr_len = 3;
+  append_arr(arr_len, grep_args, files, nfiles);
+  grep_args[arr_len + nfiles] = NULL;
 
-  for (int i = 0; i < 2 + nfiles; ++i) {
+  for (int i = 0; i < arr_len + nfiles; ++i) {
     DBG_PRINT("grep arg: %s", grep_args[i]);
   }
   int res = run_subprocess_nopipe(grep_path, grep_args, wbuf, wsize);
@@ -26,6 +27,7 @@ int run_grep(char **files, int nfiles, char *wbuf, int wsize) {
 int get_awk_files(char *msg_data, char **awk_files) {
   char *files_buf[100];
   int nfiles = get_lines(msg_data, files_buf);
+  DBG_PRINT("got %d files", nfiles);
 
   char buf[1024];
 
