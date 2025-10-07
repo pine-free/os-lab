@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <sys/msg.h>
 
+#define SERVER_PRINT(...) INFO_PRINT("server", __VA_ARGS__)
+
 int run_grep(char **files, int nfiles, char *wbuf, int wsize) {
   const char *grep_path = "/usr/bin/grep";
   char *grep_args[100] = {"grep", "-Fl", "awk"};
@@ -66,11 +68,11 @@ int main() {
 
     int nawk_files = get_awk_files(msg.msg_data, awk_files);
     if (nawk_files == 0) {
-      puts("no files from msg contain invocation of awk");
+      SERVER_PRINT("no files from msg contain invocation of awk");
     } else {
-      printf("got %d files with awk invocations\n", nawk_files);
+      SERVER_PRINT("got %d files with awk invocations\n", nawk_files);
       for (int i = 0; i < nawk_files; ++i) {
-        printf("%d. %s\n", i + 1, awk_files[i]);
+        SERVER_PRINT("%d. %s\n", i + 1, awk_files[i]);
       }
     }
 
@@ -82,7 +84,7 @@ int main() {
       total_msgs_size += msg_size;
     } while(msg.mtype != BYTES_SIZE);
 
-    printf("total size of read messages: %d bytes\n", total_msgs_size);
+    SERVER_PRINT("total size of read messages: %d bytes\n", total_msgs_size);
     total_msgs_size = 0;
   }
 }

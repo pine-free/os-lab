@@ -2,6 +2,8 @@
 #include "messages.h"
 #include <stdio.h>
 
+#define CLIENT_PRINT(...) INFO_PRINT("client", __VA_ARGS__)
+
 int run_find(char *buf, int size) {
   const char *find_path = "/usr/bin/find";
   char *const find_args[] = {"find", ".", "-name", "*.sh", NULL};
@@ -146,7 +148,7 @@ int main() {
   send_files(qid, files_buf, nfiles);
 
   for (int i = 0; i < nfiles; ++i) {
-    printf("%s\n", files_buf[i]);
+    CLIENT_PRINT("%s\n", files_buf[i]);
   }
 
   int lines_count = get_lines_count(files_buf, nfiles);
@@ -155,6 +157,6 @@ int main() {
   int bytes_size = get_bytes_size(files_buf, nfiles);
   send_byte_size(qid, bytes_size);
 
-  printf("lines: %d\n", lines_count);
-  printf("total size: %d", bytes_size);
+  CLIENT_PRINT("lines: %d\n", lines_count);
+  CLIENT_PRINT("total size: %d", bytes_size);
 }
