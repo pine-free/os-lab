@@ -15,6 +15,14 @@
     }                                                                          \
   }
 
+#define OR_FAIL(expr)                                                          \
+  {                                                                            \
+    if ((expr) == -1) {                                                        \
+      print_err(__FUNCTION__);                                                 \
+      return -1;                                                               \
+    }                                                                          \
+  }
+
 int get_lines(char *, char *[]);
 int run_subprocess(const char *path, char *const args[], const char *rbuf,
                    int rsize, char *wbuf, int wsize);
@@ -22,3 +30,4 @@ int run_subprocess_nopipe(const char *path, char *const args[], char *wbuf,
                           int wsize);
 void append_arr(int start, char *dst[], char *src[], int src_size);
 void die(const char *msg);
+void print_err(const char* msg);

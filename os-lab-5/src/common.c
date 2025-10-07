@@ -24,9 +24,13 @@ void append_arr(int start, char *dst[], char *src[], int src_size) {
   }
 }
 
-void die(const char *msg) {
+void print_err(const char* msg) {
   ERR_PRINT("%s", msg);
   ERR_PRINT("ERRNO: %d", errno);
+}
+
+void die(const char *msg) {
+  print_err(msg);
   exit(EXIT_FAILURE);
 }
 
