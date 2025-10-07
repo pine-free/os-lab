@@ -2,6 +2,13 @@
 #include "debug.h"
 #include <sys/un.h>
 
+const int S_DOMAIN = AF_UNIX;
+const int S_TYPE = SOCK_DGRAM;
+const int S_PROTOCOL = 6;
+const int N_CONNECTIONS = 5;
+const char SRV_PATH[] = "unix_socket";
+
+
 int get_sockfd() {
   int sock = socket(S_DOMAIN, S_DOMAIN, S_PROTOCOL);
   return sock;
@@ -52,7 +59,9 @@ int unix_accept(struct unix_socket *srv_sock, struct unix_socket *client_sock) {
       accept(srv_sock->sfd, (struct sockaddr *)&client_sock->addr,
              &client_sock->addr_size);
   if (DEBUG) {
-    DBG_PRINT("accepted connection from %s", client_sock->addr.sun_path);
+    if (client_sock->sfd != -1) {
+      DBG_PRINT("accepted connection from %s", client_sock->addr.sun_path);
+    }
   }
   return client_sock->sfd;
 }

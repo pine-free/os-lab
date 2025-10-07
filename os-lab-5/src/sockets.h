@@ -3,12 +3,6 @@
 #include "sys/socket.h"
 #include "sys/un.h"
 
-const int S_DOMAIN = AF_UNIX;
-const int S_TYPE = SOCK_DGRAM;
-const int S_PROTOCOL = 6;
-const int N_CONNECTIONS = 5;
-const char SRV_PATH[] = "unix_socket";
-
 struct unix_socket {
   struct sockaddr_un addr;
   socklen_t addr_size;
