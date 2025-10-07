@@ -23,11 +23,22 @@
     }                                                                          \
   }
 
+#define RUN(path, buf, ...)                                                    \
+  {                                                                            \
+    char *_args[] = {__VA_ARGS__, NULL};                                       \
+    run(path, _args, buf, sizeof(buf));                                        \
+  }
+
+#define RPIPE(path, rbuf, wbuf, ...)                                           \
+  {                                                                            \
+    char *_args[] = {__VA_ARGS__, NULL};                                       \
+    rpipe(path, _args, rbuf, sizeof(rbuf), wbuf, sizeof(wbuf));                \
+  }
+
 int get_lines(char *, char *[]);
-int run_subprocess(const char *path, char *const args[], const char *rbuf,
-                   int rsize, char *wbuf, int wsize);
-int run_subprocess_nopipe(const char *path, char *const args[], char *wbuf,
-                          int wsize);
+int rpipe(const char *path, char *const args[], const char *rbuf, int rsize,
+          char *wbuf, int wsize);
+int run(const char *path, char *const args[], char *wbuf, int wsize);
 void append_arr(int start, char *dst[], char *src[], int src_size);
 void die(const char *msg);
-void print_err(const char* msg);
+void print_err(const char *msg);

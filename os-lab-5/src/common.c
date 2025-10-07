@@ -79,7 +79,14 @@ int run_subprocess(const char *path, char *const args[], const char *rbuf,
   return 1;
 }
 
-int run_subprocess_nopipe(const char *path, char *const args[], char *wbuf,
+int run(const char *path, char *const args[], char *wbuf,
                           int wsize) {
-  return run_subprocess(path, args, "", 0, wbuf, wsize);
+  int res = rpipe(path, args, "", 0, wbuf, wsize);
+  wbuf[--res] = 0;
+
+  if (DEBUG) {
+    DBG_PRINT("%s output: '%.*s'", path, res, wbuf);
+  }
+
+  return res;
 }
