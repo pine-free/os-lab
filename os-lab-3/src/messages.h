@@ -1,5 +1,6 @@
 #pragma once
 
+#include "debug.h"
 #include <sys/msg.h>
 
 const int MSG_QUEUE_KEY = 1337;
