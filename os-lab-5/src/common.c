@@ -25,8 +25,8 @@ void append_arr(int start, char *dst[], char *src[], int src_size) {
 }
 
 void die(const char *msg) {
-  fprintf(stderr, "%s\n", msg);
-  fprintf(stderr, "ERRNO: %d\n", errno);
+  ERR_PRINT("%s", msg);
+  ERR_PRINT("ERRNO: %d", errno);
   exit(EXIT_FAILURE);
 }
 

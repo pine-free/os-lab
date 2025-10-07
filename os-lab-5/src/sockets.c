@@ -1,23 +1,26 @@
 #include "sockets.h"
+#include "common.h"
 #include "debug.h"
 #include <sys/un.h>
 
 const int S_DOMAIN = AF_UNIX;
 const int S_TYPE = SOCK_DGRAM;
-const int S_PROTOCOL = 6;
+const int S_PROTOCOL = 0;
 const int N_CONNECTIONS = 5;
 const char SRV_PATH[] = "unix_socket";
 
 
 int get_sockfd() {
-  int sock = socket(S_DOMAIN, S_DOMAIN, S_PROTOCOL);
+  int sock;
+  OR_DIE((sock = socket(S_DOMAIN, S_DOMAIN, S_PROTOCOL)));
+
   return sock;
 }
 
 struct sockaddr_un get_sockaddr() {
   struct sockaddr_un addr;
-  strcpy(addr.sun_path, SRV_PATH);
   addr.sun_family = S_DOMAIN;
+  strcpy(addr.sun_path, "unix_socket");
   return addr;
 }
 
@@ -29,6 +32,11 @@ struct unix_socket get_socket() {
   sock.sfd = get_sockfd();
   sock.addr = get_sockaddr();
   sock.addr_size = sizeof(sock.addr);
+  if (DEBUG) {
+    DBG_PRINT("created unix socket");
+    DBG_PRINT("fd %d", sock.sfd);
+    DBG_PRINT("addr %s", sock.addr.sun_path);
+  }
   return sock;
 }
 
