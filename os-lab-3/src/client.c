@@ -1,4 +1,5 @@
 #include "common.h"
+#include "messages.h"
 #include <stdio.h>
 
 int run_find(char *buf, int size) {
@@ -7,7 +8,7 @@ int run_find(char *buf, int size) {
 
   int res = run_subprocess_nopipe(find_path, find_args, buf, size);
   buf[--res] = 0;
-  
+
   if (DEBUG) {
     DBG_PRINT("find output '%.*s'", res, buf);
   }
@@ -52,8 +53,8 @@ int run_du(char **files, int nfiles, char *wbuf, int wsize) {
     return 0;
   }
 
-  const char* du_path = "/usr/bin/du";
-  char* du_args[100] = {"du",  "-b"};
+  const char *du_path = "/usr/bin/du";
+  char *du_args[100] = {"du", "-b"};
   append_arr(2, du_args, files, nfiles);
   du_args[2 + nfiles] = NULL;
 
@@ -65,7 +66,7 @@ int run_du(char **files, int nfiles, char *wbuf, int wsize) {
   return res;
 }
 
-int fill_files_buf(char* files_buf[]) {
+int fill_files_buf(char *files_buf[]) {
   char buf[1024] = {};
   int res = run_find(buf, sizeof(buf));
 
@@ -81,7 +82,7 @@ int fill_files_buf(char* files_buf[]) {
   return nfiles;
 }
 
-int get_lines_count(char* files_buf[], int nfiles) {
+int get_lines_count(char *files_buf[], int nfiles) {
   char buf[1024];
   int res = run_wc(files_buf, nfiles, buf, sizeof(buf));
   res = run_tail(buf, strlen(buf), buf, sizeof(buf));
@@ -89,12 +90,12 @@ int get_lines_count(char* files_buf[], int nfiles) {
   return atoi(buf);
 }
 
-int get_bytes_size(char* files_buf[], int nfiles) {
+int get_bytes_size(char *files_buf[], int nfiles) {
   char buf[1024];
 
   int res = run_du(files_buf, nfiles, buf, sizeof(buf));
 
-  char* lines[100] = {};
+  char *lines[100] = {};
   int nlines = get_lines(buf, lines);
   int total = 0;
   for (int i = 0; i < nlines; ++i) {
@@ -105,23 +106,39 @@ int get_bytes_size(char* files_buf[], int nfiles) {
   return total;
 }
 
-int send_files(key_t qid, char* files_buf[], int nfiles) {
+int send_files(key_t qid, char *files_buf[], int nfiles) {
   struct mymsgbuf msg;
   msg.mtype = 1;
   for (int i = 0; i < nfiles; ++i) {
-    sprintf(msg.msg_data, "%s\n", files_buf[i]);
+    sprintf(msg.msg_data, "%s", files_buf[i]);
+    if (i != nfiles - 1) {
+      sprintf(msg.msg_data, "\n");
+    }
   }
   return send_message(qid, &msg);
 }
 
+int _send_number(key_t qid, enum MSG_TYPE msg_type, int num) {
+  struct mymsgbuf msg;
+  msg.mtype = msg_type;
+  sprintf(msg.msg_data, "%d", num);
+  return send_message(qid, &msg);
+}
+
+int send_lines(key_t qid, int nlines) { _send_number(qid, LINE_COUNT, nlines); }
+
+int send_byte_size(key_t qid, int byte_size) {
+  _send_number(qid, BYTES_SIZE, byte_size);
+}
+
 int main() {
   if (getenv("DEBUG")) {
-    DEBUG=1;
+    DEBUG = 1;
   }
 
   int qid = open_queue(MSG_QUEUE_KEY);
 
-  char* files_buf[100];
+  char *files_buf[100];
   int nfiles = fill_files_buf(files_buf);
   send_files(qid, files_buf, nfiles);
 
@@ -130,8 +147,10 @@ int main() {
   }
 
   int lines_count = get_lines_count(files_buf, nfiles);
-  int bytes_size = get_bytes_size(files_buf, nfiles);
+  send_lines(qid, lines_count);
 
+  int bytes_size = get_bytes_size(files_buf, nfiles);
+  send_byte_size(qid, bytes_size);
 
   printf("lines: %d\n", lines_count);
   printf("total size: %d", bytes_size);
