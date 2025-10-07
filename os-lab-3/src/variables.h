@@ -1,3 +1,5 @@
+#pragma once
+
 #include <sys/ipc.h>
 #include <sys/msg.h>
 

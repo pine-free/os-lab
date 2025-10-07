@@ -1,91 +1,11 @@
-#include "errno.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "sys/wait.h"
-#include "unistd.h"
 #include "variables.h"
 #include <string.h>
+#include "common.h"
 
 int DEBUG = 0;
 
-int get_lines(char *buf, char *lines_buf[]) {
-  char *sep = strtok(buf, "\n");
-  int i = 0;
-  while (sep != NULL) {
-    char *arg = malloc(128);
-    strcpy(arg, sep);
-    if (DEBUG) {
-      DBG_PRINT("got line '%s'\n", arg);
-    }
-    lines_buf[i++] = arg;
-    sep = strtok(NULL, "\n");
-  }
-
-  return i;
-}
-
-void append_arr(int start, char* dst[], char* src[], int src_size) {
-  for (int j = 0; j < src_size; ++j) {
-    dst[start + j] = src[j];
-  }
-}
-
-void die(const char *msg) {
-  fprintf(stderr, "%s\n", msg);
-  fprintf(stderr, "ERRNO: %d\n", errno);
-  exit(EXIT_FAILURE);
-}
-
-int run_subprocess(const char *path, char *const args[], const char *rbuf,
-                   int rsize, char *wbuf, int wsize) {
-  int child_to_parent[2];
-  int parent_to_child[2];
-  pid_t pid;
-
-
-  if (pipe(child_to_parent) == -1) {
-    die("pipe child to parent");
-  }
-
-  if (pipe(parent_to_child) == -1) {
-    die("pipe parent to child");
-  }
-
-  if ((pid = fork()) == -1) {
-    die("fork");
-  }
-
-  if (pid == 0) {
-    dup2(child_to_parent[1], STDOUT_FILENO);
-    close(child_to_parent[1]);
-
-    close(parent_to_child[1]);
-    dup2(parent_to_child[0], STDIN_FILENO);
-    close(parent_to_child[0]);
-
-    execv(path, args);
-    die("execv");
-  } else {
-    close(child_to_parent[1]);
-    close(parent_to_child[0]);
-
-    if (write(parent_to_child[1], rbuf, rsize) == -1) {
-      die("write to child stdin");
-    }
-    close(parent_to_child[1]);
-
-    wait(NULL);
-    int nbytes = read(child_to_parent[0], wbuf, wsize);
-    return nbytes;
-  }
-
-  return 1;
-}
-
-int run_subprocess_nopipe(const char *path, char *const args[], char *wbuf,
-                          int wsize) {
-  return run_subprocess(path, args, "", 0, wbuf, wsize);
-}
 
 int run_find(char *buf, int size) {
   const char *find_path = "/usr/bin/find";
