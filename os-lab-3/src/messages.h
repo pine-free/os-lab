@@ -3,7 +3,7 @@
 #include "debug.h"
 #include <sys/msg.h>
 
-const int MSG_QUEUE_KEY = 1337;
+extern key_t MSG_QUEUE_KEY;
 
 struct mymsgbuf {
   long mtype;

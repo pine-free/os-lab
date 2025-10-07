@@ -1,6 +1,8 @@
 #include "messages.h"
 #include "debug.h"
 
+key_t MSG_QUEUE_KEY = 1337;
+
 int open_queue(key_t msg_key) {
   int qid;
   if ((qid = msgget(msg_key, IPC_CREAT | 0660)) == -1) {
