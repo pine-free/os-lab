@@ -1,11 +1,12 @@
 #include "common.h"
+#include "debug.h"
 #include "messages.h"
 #include <stdio.h>
 #include <sys/msg.h>
 
 int run_fgrep(char **files, int nfiles, char *wbuf, int wsize) {
-  const char *fgrep_path = "/usr/bin/fgrep";
-  char *fgrep_args[] = {"fgrep", "-l", "awk"};
+  const char *fgrep_path = "/usr/bin/grep";
+  char *fgrep_args[] = {"grep", "-Fl", "awk"};
   append_arr(2, fgrep_args, files, nfiles);
   fgrep_args[2 + nfiles] = NULL;
 
@@ -44,9 +45,13 @@ int main() {
   int total_msgs_size = 0;
 
   while (1) {
-    if ((msg_size = read_message(qid, NONE, &msg, 0)) == 0)
+    if ((msg_size = read_message(qid, NONE, &msg, 0)) <= 0)
       continue;
 
+    if (msg.mtype != FILES) continue;
+
+    DBG_PRINT("=== GOT MESSAGE, START PROCESING ===");
+    DBG_PRINT("read message type: %d", msg.mtype);
     total_msgs_size += msg_size;
 
     int nawk_files = get_awk_files(msg.msg_data, awk_files);
@@ -61,11 +66,12 @@ int main() {
 
     struct msqid_ds msg_info;
     msgctl(qid, IPC_STAT, &msg_info);
+    DBG_PRINT("queue contains %lu more messages", msg_info.msg_qnum);
 
-    for (int i = 0; i < msg_info.msg_qnum; ++i) {
-      msg_size = read_message(qid, NONE, &msg, IPC_NOWAIT);
+    do {
+      msg_size = read_message(qid, NONE, &msg, 0);
       total_msgs_size += msg_size;
-    }
+    } while(msg.mtype != BYTES_SIZE);
 
     printf("total size of read messages: %d bytes\n", total_msgs_size);
     total_msgs_size = 0;
