@@ -43,7 +43,9 @@ int unix_bind(struct unix_socket *sock) {
   if (DEBUG) {
     DBG_PRINT("binding socket to addr %s", sock->addr.sun_path);
   }
-  return bind(sock->sfd, (struct sockaddr *)&sock->addr, sizeof(sock->addr));
+  int res;
+  OR_DIE(res = bind(sock->sfd, (struct sockaddr *)&sock->addr, sizeof(sock->addr)));
+  return res;
 }
 
 int unix_listen(struct unix_socket *sock) {
@@ -51,14 +53,18 @@ int unix_listen(struct unix_socket *sock) {
     DBG_PRINT("listening on %s, max connections: %d", sock->addr.sun_path,
               N_CONNECTIONS);
   }
-  return listen(sock->sfd, N_CONNECTIONS);
+  int res;
+  OR_DIE(res = listen(sock->sfd, N_CONNECTIONS));
+  return res;
 }
 
 int unix_connect(struct unix_socket *sock) {
   if (DEBUG) {
     DBG_PRINT("connecting to %s", sock->addr.sun_path);
   }
-  return connect(sock->sfd, (struct sockaddr *)&sock->addr, sizeof(sock->addr));
+  int res;
+  OR_DIE(res = connect(sock->sfd, (struct sockaddr *)&sock->addr, sizeof(sock->addr)))
+  return res;
 }
 
 int unix_accept(struct unix_socket *srv_sock, struct unix_socket *client_sock) {
