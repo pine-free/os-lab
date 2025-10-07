@@ -109,10 +109,13 @@ int get_bytes_size(char *files_buf[], int nfiles) {
 int send_files(key_t qid, char *files_buf[], int nfiles) {
   struct mymsgbuf msg;
   msg.mtype = 1;
+  int offset = 0;
   for (int i = 0; i < nfiles; ++i) {
-    sprintf(msg.msg_data, "%s", files_buf[i]);
+    int len = strlen(files_buf[i]);
+    strncpy(msg.msg_data + offset, files_buf[i], len);
+    offset += len;
     if (i != nfiles - 1) {
-      sprintf(msg.msg_data, "\n");
+      msg.msg_data[offset++] = '\n';
     }
   }
   return send_message(qid, &msg);
