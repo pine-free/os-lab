@@ -17,6 +17,7 @@ struct myclient get_client() {
 
 
 int main() {
+  set_debug();
   CLIENT_PRINT("starting client");
 
   struct myclient client = get_client();

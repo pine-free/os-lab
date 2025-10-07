@@ -15,6 +15,7 @@ struct myserver get_server() {
 }
 
 int main() {
+  set_debug();
   SERVER_PRINT("starting server");
   struct myserver server = get_server();
   unix_bind(&server.sock);
@@ -22,9 +23,7 @@ int main() {
 
   struct unix_socket client_sock = get_socket();
 
-  while(1) {
+  while (1) {
     unix_accept(&server.sock, &client_sock);
   }
-
-  
 }
