@@ -2,6 +2,11 @@
 #include <sys/msg.h>
 
 
+#define DBG_PRINT(...) { \
+  printf("[DEBUG - %s] ", __FUNCTION__); \
+  printf(__VA_ARGS__); \
+}
+
 const int MSG_QUEUE_KEY = 1337;
 
 struct mymsgbuf {

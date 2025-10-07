@@ -14,6 +14,9 @@ int get_lines(char *buf, char *lines_buf[]) {
   while (sep != NULL) {
     char *arg = malloc(128);
     strcpy(arg, sep);
+    if (DEBUG) {
+      DBG_PRINT("got line '%s'\n", arg);
+    }
     lines_buf[i++] = arg;
     sep = strtok(NULL, "\n");
   }
@@ -92,7 +95,7 @@ int run_find(char *buf, int size) {
   buf[--res] = 0;
   
   if (DEBUG) {
-    printf("[DEBUG] find output '%.*s'\n", res, buf);
+    DBG_PRINT("find output '%.*s'\n", res, buf);
   }
   return res;
 }
@@ -107,7 +110,7 @@ int run_wc(char **files, int nfiles, char *wbuf, int wsize) {
   wbuf[--res] = 0;
 
   if (DEBUG) {
-    printf("[DEBUG] wc got '%.*s'\n", res, wbuf);
+    DBG_PRINT("wc got '%.*s'\n", res, wbuf);
   }
   return res;
 }
@@ -117,12 +120,12 @@ int run_tail(const char *rbuf, int rsize, char *wbuf, int wsize) {
   char *tail_args[] = {"tail", "-n", "1", NULL};
 
   if (DEBUG) {
-    printf("[DEBUG] tail stdin: '%.*s'\n", rsize, rbuf);
+    DBG_PRINT("tail stdin: '%.*s'\n", rsize, rbuf);
   }
   int res = run_subprocess(tail_path, tail_args, rbuf, rsize, wbuf, wsize);
   wbuf[--res] = 0;
   if (DEBUG) {
-    printf("[DEBUG] tail got '%.*s'\n", res, wbuf);
+    DBG_PRINT("tail got '%.*s'\n", res, wbuf);
   }
   return res;
 }
@@ -130,7 +133,7 @@ int run_tail(const char *rbuf, int rsize, char *wbuf, int wsize) {
 int run_du(char **files, int nfiles, char *wbuf, int wsize) {
   if (nfiles == 0) {
     if (DEBUG) {
-      puts("[DEBUG] du got no files on input, size 0");
+      DBG_PRINT("du got no files on input, size 0");
     }
     return 0;
   }
@@ -143,7 +146,7 @@ int run_du(char **files, int nfiles, char *wbuf, int wsize) {
   int res = run_subprocess_nopipe(du_path, du_args, wbuf, wsize);
   wbuf[--res] = 0;
   if (DEBUG) {
-    printf("[DEBUG] du got '%.*s'\n", res, wbuf);
+    DBG_PRINT("du got '%.*s'\n", res, wbuf);
   }
   return res;
 }
@@ -155,9 +158,9 @@ int fill_files_buf(char* files_buf[]) {
   int nfiles = get_lines(buf, files_buf);
 
   if (DEBUG) {
-    printf("[DEBUG] got %d files\n", nfiles);
+    DBG_PRINT("got %d files\n", nfiles);
     for (int i = 0; i < nfiles; ++i) {
-      printf("[DEBUG] %d. %s\n", i + 1, files_buf[i]);
+      DBG_PRINT("%d. %s\n", i + 1, files_buf[i]);
     }
   }
 
@@ -180,7 +183,7 @@ int get_bytes_size(char* files_buf[], int nfiles) {
   char* lines[100] = {};
   int nlines = get_lines(buf, lines);
   int total = 0;
-  for (int i = 0; i < nlines - 1; ++i) {
+  for (int i = 0; i < nlines; ++i) {
     int size = atoi(lines[i]);
     total += size;
   }
