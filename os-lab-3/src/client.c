@@ -6,7 +6,7 @@
 
 int run_find(char *buf, int size) {
   const char *find_path = "/usr/bin/find";
-  char *const find_args[] = {"find", ".", "-name", "*.sh", NULL};
+  char *const find_args[] = {"find", ".", "-maxdepth", "1", "-name", "*.sh", NULL};
 
   int res = run_subprocess_nopipe(find_path, find_args, buf, size);
   buf[--res] = 0;
