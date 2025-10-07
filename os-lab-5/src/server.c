@@ -7,23 +7,30 @@ struct myserver {
   struct unix_socket sock;
 };
 
-struct myserver get_server() {
+
+int get_server(struct myserver *server) {
   if (DEBUG) {
     DBG_PRINT("create server");
   }
-  struct myserver server = {get_socket()};
+
+  get_socket(&server->sock);
+  return 1;
 }
 
 int main() {
   set_debug();
   SERVER_PRINT("starting server");
-  struct myserver server = get_server();
-  unix_bind(&server.sock);
-  unix_listen(&server.sock);
+  struct myserver server;
+  get_server(&server);
+  OR_DIE(unix_bind(&server.sock));
+  OR_DIE(unix_listen(&server.sock));
 
-  struct unix_socket client_sock = get_socket();
+  struct unix_socket client_sock;
 
   while (1) {
-    unix_accept(&server.sock, &client_sock);
+    if (unix_accept(&server.sock, &client_sock) != -1) {
+      SERVER_PRINT("accepted connection!");
+    }
+    
   }
 }

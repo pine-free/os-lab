@@ -9,7 +9,7 @@ struct unix_socket {
   int sfd;
 };
 
-struct unix_socket get_socket();
+int get_socket(struct unix_socket *sock);
 int unix_bind(struct unix_socket *sock);
 int unix_listen(struct unix_socket *sock);
 int unix_connect(struct unix_socket *sock);

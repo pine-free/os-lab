@@ -4,15 +4,15 @@
 #define CLIENT_PRINT(...) INFO_PRINT("client", __VA_ARGS__)
 
 struct myclient {
-  struct unix_socket sock;
+  struct unix_socket srv_sock;
 };
 
-struct myclient get_client() {
+int get_client(struct myclient* client) {
   if (DEBUG) {
     DBG_PRINT("create client")
   }
-  struct myclient client = {get_socket()};
-  return client;
+  get_socket(&client->srv_sock);
+  return 1;
 }
 
 
@@ -20,8 +20,9 @@ int main() {
   set_debug();
   CLIENT_PRINT("starting client");
 
-  struct myclient client = get_client();
-  unix_connect(&client.sock);
+  struct myclient client;
+  get_client(&client);
+  OR_DIE(unix_connect(&client.srv_sock));
 
   return 0;
 }
