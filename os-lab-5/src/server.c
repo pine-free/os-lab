@@ -8,12 +8,12 @@ struct myserver {
 };
 
 
-int get_server(struct myserver *server) {
+int init_server(struct myserver *server) {
   if (DEBUG) {
     DBG_PRINT("create server");
   }
 
-  get_socket(&server->sock);
+  init_socket(&server->sock);
   return 1;
 }
 
@@ -21,7 +21,7 @@ int main() {
   set_debug();
   SERVER_PRINT("starting server");
   struct myserver server;
-  get_server(&server);
+  init_server(&server);
   OR_DIE(unix_bind(&server.sock));
   OR_DIE(unix_listen(&server.sock));
 

@@ -7,11 +7,11 @@ struct myclient {
   struct unix_socket srv_sock;
 };
 
-int get_client(struct myclient* client) {
+int init_client(struct myclient* client) {
   if (DEBUG) {
     DBG_PRINT("create client")
   }
-  get_socket(&client->srv_sock);
+  init_socket(&client->srv_sock);
   return 1;
 }
 
@@ -21,7 +21,7 @@ int main() {
   CLIENT_PRINT("starting client");
 
   struct myclient client;
-  get_client(&client);
+  init_client(&client);
   OR_DIE(unix_connect(&client.srv_sock));
 
   return 0;

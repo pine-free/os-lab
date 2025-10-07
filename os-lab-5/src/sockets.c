@@ -24,7 +24,7 @@ struct sockaddr_un get_sockaddr() {
   return addr;
 }
 
-int get_socket(struct unix_socket *sock) {
+int init_socket(struct unix_socket *sock) {
   if (DEBUG) {
     DBG_PRINT("creating unix socket");
   }
