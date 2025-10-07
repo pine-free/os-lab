@@ -1,7 +1,6 @@
 #include "common.h"
 #include "debug.h"
 #include "messages.h"
-#include <stdio.h>
 #include <sys/msg.h>
 
 #define SERVER_PRINT(...) INFO_PRINT("server", __VA_ARGS__)
@@ -13,9 +12,6 @@ int run_grep(char **files, int nfiles, char *wbuf, int wsize) {
   append_arr(arr_len, grep_args, files, nfiles);
   grep_args[arr_len + nfiles] = NULL;
 
-  for (int i = 0; i < arr_len + nfiles; ++i) {
-    DBG_PRINT("grep arg: %s", grep_args[i]);
-  }
   int res = run_subprocess_nopipe(grep_path, grep_args, wbuf, wsize);
   wbuf[--res] = 0;
 
@@ -29,13 +25,17 @@ int run_grep(char **files, int nfiles, char *wbuf, int wsize) {
 int get_awk_files(char *msg_data, char **awk_files) {
   char *files_buf[100];
   int nfiles = get_lines(msg_data, files_buf);
-  DBG_PRINT("got %d files", nfiles);
+  if (DEBUG) {
+    DBG_PRINT("got %d files", nfiles);
+  }
 
   char buf[1024];
 
   int fgrep_out_len = run_grep(files_buf, nfiles, buf, sizeof(buf));
   if (fgrep_out_len == -1) {
-    DBG_PRINT("grep got no files, exiting");
+    if (DEBUG) {
+      DBG_PRINT("grep got no files, exiting");
+    }
     return 0;
   }
 
@@ -62,8 +62,10 @@ int main() {
 
     if (msg.mtype != FILES) continue;
 
-    DBG_PRINT("=== GOT MESSAGE, START PROCESING ===");
-    DBG_PRINT("read message type: %d", msg.mtype);
+    if (DEBUG) {
+      DBG_PRINT("=== GOT MESSAGE, START PROCESING ===");
+      DBG_PRINT("read message type: %d", msg.mtype);
+    }
     total_msgs_size += msg_size;
 
     int nawk_files = get_awk_files(msg.msg_data, awk_files);
@@ -78,7 +80,9 @@ int main() {
 
     struct msqid_ds msg_info;
     msgctl(qid, IPC_STAT, &msg_info);
-    DBG_PRINT("reading until bytes size message");
+    if (DEBUG) {
+      DBG_PRINT("reading until bytes size message");
+    }
     do {
       msg_size = read_message(qid, NONE, &msg, 0);
       total_msgs_size += msg_size;

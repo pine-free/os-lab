@@ -130,10 +130,10 @@ int _send_number(key_t qid, enum MSG_TYPE msg_type, int num) {
   return send_message(qid, &msg);
 }
 
-int send_lines(key_t qid, int nlines) { _send_number(qid, LINE_COUNT, nlines); }
+int send_lines(key_t qid, int nlines) { return _send_number(qid, LINE_COUNT, nlines); }
 
 int send_byte_size(key_t qid, int byte_size) {
-  _send_number(qid, BYTES_SIZE, byte_size);
+  return _send_number(qid, BYTES_SIZE, byte_size);
 }
 
 int main() {

@@ -8,8 +8,8 @@ server: src/server.c
 
 all: client server
 
-test:
+test: all
 	./bin/client & ./bin/server
 
-test-debug:
-	DEBUG=1 ./bin/client & ./bin/server
+test-debug: all
+	DEBUG=1 ./bin/client & DEBUG=1 ./bin/server
