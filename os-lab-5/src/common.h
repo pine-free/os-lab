@@ -36,7 +36,7 @@
   }
 
 int get_lines(char *, char *[]);
-int rpipe(const char *path, char *const args[], const char *rbuf, int rsize,
+int rpipe(const char *path, char *const args[], char *rbuf, int rsize,
           char *wbuf, int wsize);
 int run(const char *path, char *const args[], char *wbuf, int wsize);
 void append_arr(int start, char *dst[], char *src[], int src_size);

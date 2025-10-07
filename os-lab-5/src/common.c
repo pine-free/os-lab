@@ -24,7 +24,7 @@ void append_arr(int start, char *dst[], char *src[], int src_size) {
   }
 }
 
-void print_err(const char* msg) {
+void print_err(const char *msg) {
   ERR_PRINT("%s", msg);
   ERR_PRINT("ERRNO: %d", errno);
 }
@@ -60,15 +60,13 @@ int run_subprocess(const char *path, char *const args[], const char *rbuf,
     dup2(parent_to_child[0], STDIN_FILENO);
     close(parent_to_child[0]);
 
-    execv(path, args);
+    OR_FAIL(execv(path, args));
     die("execv");
   } else {
     close(child_to_parent[1]);
     close(parent_to_child[0]);
 
-    if (write(parent_to_child[1], rbuf, rsize) == -1) {
-      die("write to child stdin");
-    }
+    OR_FAIL(write(parent_to_child[1], rbuf, rsize));
     close(parent_to_child[1]);
 
     wait(NULL);
@@ -79,9 +77,20 @@ int run_subprocess(const char *path, char *const args[], const char *rbuf,
   return 1;
 }
 
-int run(const char *path, char *const args[], char *wbuf,
-                          int wsize) {
-  int res = rpipe(path, args, "", 0, wbuf, wsize);
+int run(const char *path, char *const args[], char *wbuf, int wsize) {
+  int res = run_subprocess(path, args, "", 0, wbuf, wsize);
+  wbuf[--res] = 0;
+
+  if (DEBUG) {
+    DBG_PRINT("%s output: '%.*s'", path, res, wbuf);
+  }
+
+  return res;
+}
+
+int rpipe(const char *path, char *const args[], char *rbuf, int rsize,
+          char *wbuf, int wsize) {
+  int res = run_subprocess(path, args, rbuf, rsize, wbuf, wsize);
   wbuf[--res] = 0;
 
   if (DEBUG) {

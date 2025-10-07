@@ -18,9 +18,12 @@ int init_client(struct myclient* client) {
 
 int get_sleeping_procs(char* wbuf, int wsize) {
   char buf[1024];
+  char grp_buf[1024];
   RUN("/usr/bin/ps", buf, "ps", "-eo", "pid=,s=");
-  RPIPE("/usr/bin/grep", buf, buf, "grep", "S");
-  strncpy(wbuf, buf, wsize);
+  char* args[] = {"grep", "S", NULL};
+  rpipe("/usr/bin/grep", args, buf, strlen(buf), buf, sizeof(buf));
+  strncpy(wbuf, buf, strlen(buf));
+  return strlen(wbuf);
 }
 
 int main() {
