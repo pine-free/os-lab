@@ -1,6 +1,7 @@
 # pragma once
 
 #include "debug.h"
+#include "messages.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,5 @@
 #include "common.h"
+#include <stdio.h>
 
 int run_find(char *buf, int size) {
   const char *find_path = "/usr/bin/find";
@@ -8,7 +9,7 @@ int run_find(char *buf, int size) {
   buf[--res] = 0;
   
   if (DEBUG) {
-    DBG_PRINT("find output '%.*s'\n", res, buf);
+    DBG_PRINT("find output '%.*s'", res, buf);
   }
   return res;
 }
@@ -23,7 +24,7 @@ int run_wc(char **files, int nfiles, char *wbuf, int wsize) {
   wbuf[--res] = 0;
 
   if (DEBUG) {
-    DBG_PRINT("wc got '%.*s'\n", res, wbuf);
+    DBG_PRINT("wc got '%.*s'", res, wbuf);
   }
   return res;
 }
@@ -33,12 +34,12 @@ int run_tail(const char *rbuf, int rsize, char *wbuf, int wsize) {
   char *tail_args[] = {"tail", "-n", "1", NULL};
 
   if (DEBUG) {
-    DBG_PRINT("tail stdin: '%.*s'\n", rsize, rbuf);
+    DBG_PRINT("tail stdin: '%.*s'", rsize, rbuf);
   }
   int res = run_subprocess(tail_path, tail_args, rbuf, rsize, wbuf, wsize);
   wbuf[--res] = 0;
   if (DEBUG) {
-    DBG_PRINT("tail got '%.*s'\n", res, wbuf);
+    DBG_PRINT("tail got '%.*s'", res, wbuf);
   }
   return res;
 }
@@ -59,7 +60,7 @@ int run_du(char **files, int nfiles, char *wbuf, int wsize) {
   int res = run_subprocess_nopipe(du_path, du_args, wbuf, wsize);
   wbuf[--res] = 0;
   if (DEBUG) {
-    DBG_PRINT("du got '%.*s'\n", res, wbuf);
+    DBG_PRINT("du got '%.*s'", res, wbuf);
   }
   return res;
 }
@@ -71,9 +72,9 @@ int fill_files_buf(char* files_buf[]) {
   int nfiles = get_lines(buf, files_buf);
 
   if (DEBUG) {
-    DBG_PRINT("got %d files\n", nfiles);
+    DBG_PRINT("got %d files", nfiles);
     for (int i = 0; i < nfiles; ++i) {
-      DBG_PRINT("%d. %s\n", i + 1, files_buf[i]);
+      DBG_PRINT("%d. %s", i + 1, files_buf[i]);
     }
   }
 
@@ -104,13 +105,25 @@ int get_bytes_size(char* files_buf[], int nfiles) {
   return total;
 }
 
+int send_files(key_t qid, char* files_buf[], int nfiles) {
+  struct mymsgbuf msg;
+  msg.mtype = 1;
+  for (int i = 0; i < nfiles; ++i) {
+    sprintf(msg.msg_data, "%s\n", files_buf[i]);
+  }
+  return send_message(qid, &msg);
+}
+
 int main() {
   if (getenv("DEBUG")) {
     DEBUG=1;
   }
 
+  int qid = open_queue(MSG_QUEUE_KEY);
+
   char* files_buf[100];
   int nfiles = fill_files_buf(files_buf);
+  send_files(qid, files_buf, nfiles);
 
   for (int i = 0; i < nfiles; ++i) {
     printf("%s\n", files_buf[i]);
