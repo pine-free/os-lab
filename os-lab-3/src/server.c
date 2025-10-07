@@ -4,17 +4,20 @@
 #include <stdio.h>
 #include <sys/msg.h>
 
-int run_fgrep(char **files, int nfiles, char *wbuf, int wsize) {
-  const char *fgrep_path = "/usr/bin/grep";
-  char *fgrep_args[] = {"grep", "-Fl", "awk"};
-  append_arr(2, fgrep_args, files, nfiles);
-  fgrep_args[2 + nfiles] = NULL;
+int run_grep(char **files, int nfiles, char *wbuf, int wsize) {
+  const char *grep_path = "/usr/bin/grep";
+  char *grep_args[] = {"grep", "-Fl", "awk"};
+  append_arr(2, grep_args, files, nfiles);
+  grep_args[2 + nfiles] = NULL;
 
-  int res = run_subprocess_nopipe(fgrep_path, fgrep_args, wbuf, wsize);
+  for (int i = 0; i < 2 + nfiles; ++i) {
+    DBG_PRINT("grep arg: %s", grep_args[i]);
+  }
+  int res = run_subprocess_nopipe(grep_path, grep_args, wbuf, wsize);
   wbuf[--res] = 0;
 
   if (DEBUG) {
-    DBG_PRINT("fgrep got '%.*s'", res, wbuf);
+    DBG_PRINT("grep got '%.*s'", res, wbuf);
   }
 
   return res;
@@ -26,7 +29,12 @@ int get_awk_files(char *msg_data, char **awk_files) {
 
   char buf[1024];
 
-  int fgrep_out_len = run_fgrep(files_buf, nfiles, buf, sizeof(buf));
+  int fgrep_out_len = run_grep(files_buf, nfiles, buf, sizeof(buf));
+  if (fgrep_out_len == -1) {
+    DBG_PRINT("grep got no files, exiting");
+    return 0;
+  }
+
   int nawk_files = get_lines(buf, awk_files);
 
   return nawk_files;
@@ -56,7 +64,7 @@ int main() {
 
     int nawk_files = get_awk_files(msg.msg_data, awk_files);
     if (nawk_files == 0) {
-      puts("no files from msg contain invocation of awk\n");
+      puts("no files from msg contain invocation of awk");
     } else {
       printf("got %d files with awk invocations\n", nawk_files);
       for (int i = 0; i < nawk_files; ++i) {
@@ -66,8 +74,7 @@ int main() {
 
     struct msqid_ds msg_info;
     msgctl(qid, IPC_STAT, &msg_info);
-    DBG_PRINT("queue contains %lu more messages", msg_info.msg_qnum);
-
+    DBG_PRINT("reading until bytes size message");
     do {
       msg_size = read_message(qid, NONE, &msg, 0);
       total_msgs_size += msg_size;
