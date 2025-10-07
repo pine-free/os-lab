@@ -6,6 +6,7 @@
 extern key_t MSG_QUEUE_KEY;
 
 enum MSG_TYPE {
+  NONE = 0,
   FILES,
   LINE_COUNT,
   BYTES_SIZE
