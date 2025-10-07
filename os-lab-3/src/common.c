@@ -1,12 +1,6 @@
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include "variables.h"
+#include "common.h"
 
-extern int DEBUG;
+int DEBUG = 0;
 
 int get_lines(char *buf, char *lines_buf[]) {
   char *sep = strtok(buf, "\n");
@@ -24,7 +18,7 @@ int get_lines(char *buf, char *lines_buf[]) {
   return i;
 }
 
-void append_arr(int start, char* dst[], char* src[], int src_size) {
+void append_arr(int start, char *dst[], char *src[], int src_size) {
   for (int j = 0; j < src_size; ++j) {
     dst[start + j] = src[j];
   }
@@ -41,7 +35,6 @@ int run_subprocess(const char *path, char *const args[], const char *rbuf,
   int child_to_parent[2];
   int parent_to_child[2];
   pid_t pid;
-
 
   if (pipe(child_to_parent) == -1) {
     die("pipe child to parent");

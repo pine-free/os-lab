@@ -1,5 +1,13 @@
 # pragma once
 
+#include "debug.h"
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 int get_lines(char *, char *[]);
 int run_subprocess(const char *path, char *const args[], const char *rbuf,
                    int rsize, char *wbuf, int wsize);

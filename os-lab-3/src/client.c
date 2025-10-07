@@ -1,11 +1,4 @@
-#include "stdio.h"
-#include "stdlib.h"
-#include "variables.h"
-#include <string.h>
 #include "common.h"
-
-int DEBUG = 0;
-
 
 int run_find(char *buf, int size) {
   const char *find_path = "/usr/bin/find";
