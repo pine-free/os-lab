@@ -9,7 +9,11 @@ server: src/server.c
 all: client server
 
 test: all
-	./bin/client & ./bin/server
+	./bin/server & ./bin/client
+	sleep 1
+	killall server
 
 test-debug: all
-	DEBUG=1 ./bin/client & DEBUG=1 ./bin/server
+	DEBUG=1 ./bin/server & DEBUG=1 ./bin/client
+	sleep 1
+	killall server
