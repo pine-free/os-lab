@@ -9,7 +9,6 @@ const int S_PROTOCOL = 0;
 const int N_CONNECTIONS = 5;
 const char SRV_PATH[] = "unix_socket";
 
-
 int get_sockfd() {
   int sock;
   OR_DIE((sock = socket(S_DOMAIN, S_DOMAIN, S_PROTOCOL)));
@@ -44,7 +43,8 @@ int unix_bind(struct unix_socket *sock) {
     DBG_PRINT("binding socket to addr %s", sock->addr.sun_path);
   }
   int res;
-  OR_DIE(res = bind(sock->sfd, (struct sockaddr *)&sock->addr, sizeof(sock->addr)));
+  OR_DIE(res = bind(sock->sfd, (struct sockaddr *)&sock->addr,
+                    sizeof(sock->addr)));
   return res;
 }
 
@@ -63,7 +63,8 @@ int unix_connect(struct unix_socket *sock) {
     DBG_PRINT("connecting to %s", sock->addr.sun_path);
   }
   int res;
-  OR_DIE(res = connect(sock->sfd, (struct sockaddr *)&sock->addr, sizeof(sock->addr)))
+  OR_DIE(res = connect(sock->sfd, (struct sockaddr *)&sock->addr,
+                       sizeof(sock->addr)))
   return res;
 }
 
@@ -79,3 +80,24 @@ int unix_accept(struct unix_socket *srv_sock, struct unix_socket *client_sock) {
   return client_sock->sfd;
 }
 
+int unix_write(struct unix_socket *sock, const void *buf, size_t n) {
+  if (DEBUG) {
+    DBG_PRINT("writing message %.*s to %s", n, buf, sock->addr.sun_path);
+  }
+
+  int res;
+  OR_DIE(res = write(sock->sfd, buf, n));
+
+  return res;
+}
+
+int unix_read(struct unix_socket *sock, void *buf, size_t n) {
+  int res;
+  OR_DIE(res = read(sock->sfd, buf, n));
+
+  if (DEBUG) {
+    DBG_PRINT("read message %.*s from %s", n, buf, sock->addr.sun_path);
+  }
+
+  return res;
+}
