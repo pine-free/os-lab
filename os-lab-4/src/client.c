@@ -18,10 +18,16 @@ int main() {
   OR_DIE(SHMID = shmget(SHM_KEY, SHM_SIZE, 0));
   DBG_PRINT("got share memory %d", SHMID);
 
-  char* addr;
+  char *addr;
   OR_DIE(addr = shmat(SHMID, NULL, 0));
   DBG_PRINT("attached shared memory from %d", SHMID);
 
+  DBG_PRINT("running cal and putting output to shared mem");
+  S_RUN("/usr/bin/cal", addr, SHM_SIZE, "cal", "-v", "--color=never");
+
+  DBG_PRINT("decrementing semaphore");
+  struct sembuf sem_dec = {0, -1, 0};
+  OR_DIE(semop(SEMID, &sem_dec, 1));
 
   return 0;
 }
