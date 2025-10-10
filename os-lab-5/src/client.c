@@ -1,5 +1,6 @@
 #include "common.h"
 #include "sockets.h"
+#include <ctype.h>
 #include <sys/un.h>
 
 #define CLIENT_PRINT(...) INFO_PRINT("client", __VA_ARGS__)
@@ -26,6 +27,11 @@ int get_sleeping_procs(char* wbuf, int wsize) {
   return strlen(wbuf);
 }
 
+char* ltrim(char* s) {
+  while (isspace(*s)) ++s;
+  return s;
+}
+
 int main() {
   set_debug();
   CLIENT_PRINT("starting client");
@@ -37,7 +43,9 @@ int main() {
   char sleeping_procs[1024];
 
   get_sleeping_procs(sleeping_procs, sizeof(sleeping_procs));
-  unix_write(&client.srv_sock, sleeping_procs, 1024);
+  char* msg_start = ltrim(sleeping_procs);
+  
+  unix_write(&client.srv_sock, msg_start, strlen(msg_start));
 
   return 0;
 }
