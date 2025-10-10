@@ -23,22 +23,16 @@
     }                                                                          \
   }
 
-#define RUN(path, buf, ...)                                                    \
-  {                                                                            \
-    char *_args[] = {__VA_ARGS__, NULL};                                       \
-    run(path, _args, buf, sizeof(buf));                                        \
-  }
-
-#define S_RUN(path, buf, size, ...)                                            \
+#define RUN(path, buf, size, ...)                                              \
   {                                                                            \
     char *_args[] = {__VA_ARGS__, NULL};                                       \
     run(path, _args, buf, size);                                               \
   }
 
-#define RPIPE(path, rbuf, wbuf, ...)                                           \
+#define RPIPE(path, rbuf, _rsize, wbuf, _wsize, ...)                           \
   {                                                                            \
     char *_args[] = {__VA_ARGS__, NULL};                                       \
-    rpipe(path, _args, rbuf, sizeof(rbuf), wbuf, sizeof(wbuf));                \
+    rpipe(path, _args, rbuf, _rsize, wbuf, _wisze);                            \
   }
 
 int get_lines(char *, char *[]);

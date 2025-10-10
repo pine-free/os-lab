@@ -57,6 +57,14 @@ int main() {
 
     SERVER_PRINT("got info: '%s'", addr);
 
+    DBG_PRINT("getting today's date");
+    char today_day[3];
+    RUN("/usr/bin/date", today_day, sizeof(today_day), "date", "+%d");
+
+    char seek_arg[5];
+    sprintf(seek_arg, " %s ", today_day);
+
+
     DBG_PRINT("resetting semaphore wait");
     OR_DIE(semctl(SEMID, 0, SETVAL, 1));
   }

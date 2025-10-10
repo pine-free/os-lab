@@ -21,9 +21,9 @@ int main() {
   char *addr;
   OR_DIE(addr = shmat(SHMID, NULL, 0));
   DBG_PRINT("attached shared memory from %d", SHMID);
-
+  
   DBG_PRINT("running cal and putting output to shared mem");
-  S_RUN("/usr/bin/cal", addr, SHM_SIZE, "cal", "-v", "--color=never");
+  RUN("/usr/bin/cal", addr, SHM_SIZE, "cal", "-v", "--color=never");
 
   DBG_PRINT("decrementing semaphore");
   struct sembuf sem_dec = {0, -1, 0};
