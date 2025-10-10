@@ -8,12 +8,12 @@ server: src/server.c
 
 all: client server
 
-test: all
-	./bin/server & ./bin/client
+teardown:
 	sleep 1
 	killall server
 
-test-debug: all
-	DEBUG=1 ./bin/server & DEBUG=1 ./bin/client
-	sleep 1
-	killall server
+run-test: all
+	./bin/server & ./bin/client
+
+
+test: run-test teardown

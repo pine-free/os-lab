@@ -72,7 +72,7 @@ int main() {
     if (nawk_files == 0) {
       SERVER_PRINT("no files from msg contain invocation of awk");
     } else {
-      SERVER_PRINT("got %d files with awk invocations\n", nawk_files);
+      SERVER_PRINT("got %d files with awk invocations", nawk_files);
       for (int i = 0; i < nawk_files; ++i) {
         SERVER_PRINT("%d. %s\n", i + 1, awk_files[i]);
       }
@@ -88,7 +88,7 @@ int main() {
       total_msgs_size += msg_size;
     } while(msg.mtype != BYTES_SIZE);
 
-    SERVER_PRINT("total size of read messages: %d bytes\n", total_msgs_size);
+    SERVER_PRINT("total size of read messages: %d bytes", total_msgs_size);
     total_msgs_size = 0;
   }
 }

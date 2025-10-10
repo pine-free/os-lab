@@ -157,6 +157,6 @@ int main() {
   int bytes_size = get_bytes_size(files_buf, nfiles);
   send_byte_size(qid, bytes_size);
 
-  CLIENT_PRINT("lines: %d\n", lines_count);
+  CLIENT_PRINT("lines: %d", lines_count);
   CLIENT_PRINT("total size: %d", bytes_size);
 }

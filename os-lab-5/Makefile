@@ -8,8 +8,12 @@ server: src/server.c
 
 all: client server
 
-test: all
-	./bin/client & ./bin/server
+teardown: 
+	sleep 2
+	killall server
+	rm unix_socket
 
-test-debug: all
-	DEBUG=1 ./bin/client & DEBUG=1 ./bin/server
+run-test: all
+	./bin/server & ./bin/client
+
+test: run-test teardown
