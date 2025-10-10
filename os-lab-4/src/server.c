@@ -56,6 +56,9 @@ int main() {
     OR_DIE(semop(SEMID, &sem_wait, 1));
 
     SERVER_PRINT("got info: '%s'", addr);
+
+    DBG_PRINT("resetting semaphore wait");
+    OR_DIE(semctl(SEMID, 0, SETVAL, 1));
   }
 
   return 0;
