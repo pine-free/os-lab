@@ -29,6 +29,12 @@
     run(path, _args, buf, sizeof(buf));                                        \
   }
 
+#define S_RUN(path, buf, size, ...)                                            \
+  {                                                                            \
+    char *_args[] = {__VA_ARGS__, NULL};                                       \
+    run(path, _args, buf, size);                                               \
+  }
+
 #define RPIPE(path, rbuf, wbuf, ...)                                           \
   {                                                                            \
     char *_args[] = {__VA_ARGS__, NULL};                                       \
