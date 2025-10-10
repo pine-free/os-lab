@@ -10,7 +10,7 @@ static int SHMID;
 
 int main() {
   set_debug();
-  CLIENT_PRINT("starting client");
+  CLIENT_PRINT("running client with pid %d", getpid());
 
   OR_DIE(SEMID = semget(SEM_KEY, 0, 0));
   DBG_PRINT("got semaphore set %d", SEMID);
@@ -21,9 +21,13 @@ int main() {
   char *addr;
   OR_DIE(addr = shmat(SHMID, NULL, 0));
   DBG_PRINT("attached shared memory from %d", SHMID);
+  CLIENT_PRINT("running client with pid %d", getpid());
   
   DBG_PRINT("running cal and putting output to shared mem");
   RUN("/usr/bin/cal", addr, SHM_SIZE, "cal", "-v", "--color=never");
+
+  DBG_PRINT("detaching from shared memory");
+  OR_DIE(shmdt(addr));
 
   DBG_PRINT("decrementing semaphore");
   struct sembuf sem_dec = {0, -1, 0};
