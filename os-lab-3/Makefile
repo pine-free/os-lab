@@ -8,8 +8,31 @@ server: src/server.c
 
 all: client server
 
-test: all
-	./bin/client & ./bin/server
+define FILE1
+lol
+kek
+cheburek
+endef
 
-test-debug: all
-	DEBUG=1 ./bin/client & DEBUG=1 ./bin/server
+define FILE2
+kek
+awk
+arbidol
+endef
+
+export FILE1
+export FILE2
+
+setup:
+	echo "$$FILE1" > file1.sh
+	echo "$$FILE2" > file2.sh
+
+teardown:
+	rm file1.sh file2.sh
+	sleep 1
+	killall server
+
+run-test: all
+	./bin/server & ./bin/client
+
+test: setup run-test teardown
