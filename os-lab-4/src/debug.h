@@ -22,5 +22,5 @@ int set_debug();
     printf("\n");                                                              \
   }
 
-#define DBG_PRINT(...) LOG_PRINT_DETAILED("DEBUG", stdout, __VA_ARGS__)
+#define DBG_PRINT(...) if (DEBUG) LOG_PRINT_DETAILED("DEBUG", stdout, __VA_ARGS__)
 #define ERR_PRINT(...) LOG_PRINT_DETAILED("ERROR", stderr, __VA_ARGS__)
