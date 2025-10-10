@@ -13,6 +13,7 @@ static int SEMID;
 static int SHMID;
 
 void server_teardown(int signal) {
+  SERVER_PRINT("stopping server");
   if (DEBUG) {
     DBG_PRINT("deleting semaphore set by key %d", SEMID);
   }
@@ -36,23 +37,39 @@ int main() {
   struct sigaction sig = {&server_teardown};
   sigaction(SIGINT, &sig, NULL);
 
-  OR_DIE(SEMID = semget(SEM_KEY, 1, IPC_CREAT));
+  OR_DIE(SEMID = semget(SEM_KEY, 1, IPC_CREAT | 0600));
 
   if (DEBUG) {
     DBG_PRINT("created semaphore set %d", SEMID);
   }
 
+  OR_DIE(semctl(SEMID, 0, SETVAL, 1));
+  if (DEBUG) {
+    DBG_PRINT("intialized semaphore value to 1");
+  }
+
   int shmid;
-  OR_DIE(SHMID = shmget(SHM_KEY, SHM_SIZE, IPC_CREAT));
+  OR_DIE(SHMID = shmget(SHM_KEY, SHM_SIZE, IPC_CREAT | 0600));
 
   if (DEBUG) {
     DBG_PRINT("created shared memory of size %zu with id %d", SHM_SIZE, SHMID);
   }
 
+  // Attach shared memory to addr space
+  char* addr;
+  OR_DIE(addr = shmat(SHMID, NULL, SHM_RDONLY));
+
+  // wait until semaphore becomes 0
+  struct sembuf sem_wait = {0, 0, 0};
+
   while(1) {
-    
+    if (DEBUG) {
+      DBG_PRINT("waiting for semaphore value to be set to 0");
+    }
+    OR_DIE(semop(SEMID, &sem_wait, 1));
+
+    SERVER_PRINT("got info: '%s'", addr);
   }
-  
 
   return 0;
 }
