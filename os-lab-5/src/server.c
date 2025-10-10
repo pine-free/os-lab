@@ -26,11 +26,15 @@ int main() {
   OR_DIE(unix_listen(&server.sock));
 
   struct unix_socket client_sock;
+  char msg[1024];
 
   while (1) {
-    if (unix_accept(&server.sock, &client_sock) != -1) {
-      SERVER_PRINT("accepted connection!");
+    if (unix_accept(&server.sock, &client_sock) == -1) {
+      continue;
     }
+
+    SERVER_PRINT("accepted connection!");
+    unix_read(&client_sock, msg, sizeof(msg));
     
   }
 }

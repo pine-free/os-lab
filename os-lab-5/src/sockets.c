@@ -82,7 +82,7 @@ int unix_accept(struct unix_socket *srv_sock, struct unix_socket *client_sock) {
 
 int unix_write(struct unix_socket *sock, const void *buf, size_t n) {
   if (DEBUG) {
-    DBG_PRINT("writing message %.*s to %s", n, buf, sock->addr.sun_path);
+    DBG_PRINT("writing message '%.*s' to %s", n, buf, sock->addr.sun_path);
   }
 
   int res;
@@ -96,7 +96,7 @@ int unix_read(struct unix_socket *sock, void *buf, size_t n) {
   OR_DIE(res = read(sock->sfd, buf, n));
 
   if (DEBUG) {
-    DBG_PRINT("read message %.*s from %s", n, buf, sock->addr.sun_path);
+    DBG_PRINT("read message '%.*s' from %s", n, buf, sock->addr.sun_path);
   }
 
   return res;

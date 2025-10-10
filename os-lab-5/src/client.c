@@ -37,6 +37,7 @@ int main() {
   char sleeping_procs[1024];
 
   get_sleeping_procs(sleeping_procs, sizeof(sleeping_procs));
+  unix_write(&client.srv_sock, sleeping_procs, 1024);
 
   return 0;
 }
