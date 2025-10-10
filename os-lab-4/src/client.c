@@ -16,12 +16,11 @@ int main() {
   DBG_PRINT("got semaphore set %d", SEMID);
 
   OR_DIE(SHMID = shmget(SHM_KEY, SHM_SIZE, 0));
-  DBG_PRINT("got share memory %d", SHMID);
+  DBG_PRINT("got shared memory %d", SHMID);
 
   char *addr;
   OR_DIE(addr = shmat(SHMID, NULL, 0));
   DBG_PRINT("attached shared memory from %d", SHMID);
-  CLIENT_PRINT("running client with pid %d", getpid());
   
   DBG_PRINT("running cal and putting output to shared mem");
   RUN("/usr/bin/cal", addr, SHM_SIZE, "cal", "-v", "--color=never");
