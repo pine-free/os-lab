@@ -9,7 +9,7 @@ int get_lines(char *buf, char *lines_buf[]) {
     char *arg = malloc(128);
     strcpy(arg, sep);
     if (DEBUG) {
-      DBG_PRINT("got line '%s'\n", arg);
+      DBG_PRINT("got line '%s'", arg);
     }
     lines_buf[i++] = arg;
     sep = strtok(NULL, "\n");
