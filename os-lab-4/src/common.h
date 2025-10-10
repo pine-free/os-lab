@@ -29,10 +29,10 @@
     run(path, _args, buf, size);                                               \
   }
 
-#define RPIPE(path, rbuf, _rsize, wbuf, _wsize, ...)                           \
+#define RPIPE(path, rbuf, size_r, wbuf, size_w, ...)                             \
   {                                                                            \
     char *_args[] = {__VA_ARGS__, NULL};                                       \
-    rpipe(path, _args, rbuf, _rsize, wbuf, _wisze);                            \
+    rpipe(path, _args, rbuf, size_r, wbuf, size_w);                            \
   }
 
 int get_lines(char *, char *[]);
